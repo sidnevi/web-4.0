@@ -1,0 +1,14 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="AvatarIcon">
+<mask id="mask0_0_9442" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="3" y="0" width="14" height="20">
+<g id="Mask">
+<path id="Mask_2" opacity="0.5" d="M3.75 2.08333C3.75 1.39298 4.30964 0.833333 5 0.833333H14.5833V3.33333H3.75V2.08333Z" fill="black"/>
+<path id="Mask_3" fill-rule="evenodd" clip-rule="evenodd" d="M3.75 2.08333V19.1667H13.75C15.1307 19.1667 16.25 18.0474 16.25 16.6667V3.33333H5C4.30964 3.33333 3.75 2.77369 3.75 2.08333ZM7.5 15V16.25H11.25C11.9404 16.25 12.5 15.6904 12.5 15H7.5ZM7.5 10C7.5 8.61929 8.61929 7.5 10 7.5C11.3807 7.5 12.5 8.61929 12.5 10C12.5 11.3807 11.3807 12.5 10 12.5C8.61929 12.5 7.5 11.3807 7.5 10Z" fill="black"/>
+<path id="Mask_4" opacity="0.6" fill-rule="evenodd" clip-rule="evenodd" d="M10 8.75C9.30964 8.75 8.75 9.30964 8.75 10C8.75 10.6904 9.30964 11.25 10 11.25C10.6904 11.25 11.25 10.6904 11.25 10C11.25 9.30964 10.6904 8.75 10 8.75Z" fill="black"/>
+</g>
+</mask>
+<g mask="url(#mask0_0_9442)">
+<path id="Color" d="M0 0H20V20H0V0Z" fill="#9299A2"/>
+</g>
+</g>
+</svg>

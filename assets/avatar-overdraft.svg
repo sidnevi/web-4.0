@@ -1,0 +1,18 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="AvatarIcon">
+<mask id="mask0_0_3692" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="1" width="20" height="18">
+<g id="Mask">
+<path id="Mask_2" d="M10.6503 1.49563C10.3918 0.945955 9.61651 0.945955 9.34974 1.49563L7.21556 6.90079L1.47161 7.08401C0.854695 7.15064 0.612932 7.91686 1.07145 8.33328L5.48987 11.8812L4.05597 17.303C3.93092 17.9027 4.5645 18.369 5.10639 18.0775L10 14.9627L14.8936 18.0775C15.4272 18.369 16.0607 17.9027 15.944 17.303L14.5101 11.8812L18.9286 8.33328C19.3871 7.91686 19.1453 7.15897 18.5284 7.08401L12.7844 6.90079L10.6503 1.49563Z" fill="url(#paint0_linear_0_3692)"/>
+</g>
+</mask>
+<g mask="url(#mask0_0_3692)">
+<path id="Color" d="M0 0H20V20H0V0Z" fill="white"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_0_3692" x1="4.68122" y1="6.57598" x2="14.6767" y2="15.3223" gradientUnits="userSpaceOnUse">
+<stop/>
+<stop offset="1" stop-opacity="0.65"/>
+</linearGradient>
+</defs>
+</svg>

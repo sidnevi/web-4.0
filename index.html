@@ -3,1166 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ЦУ — notification + right panel</title>
-  <style>
-    :root {
-      --canvas: #1487c9;
-      --panel-bg: #f5f6f7;
-      --card-default: rgba(255,255,255,.8);
-      --card-hover: #fff;
-      --text-secondary: rgba(0,0,0,.54);
-      --text-primary: rgba(0,0,0,.8);
-      --text-tertiary: rgba(0,0,0,.4);
-      --neutral-1: rgba(36,74,127,.06);
-      --avatar-blue: rgba(66,139,249,.25);
-      --radius: 24px;
-      --shadow-card: 0 14px 21px rgba(0,0,0,.12);
-      --shadow-badge: 0 8px 14px rgba(0,0,0,.16);
-      --motion: 180ms cubic-bezier(.2,.8,.2,1);
-      --expressive-duration: 500ms;
-      --expressive-easing: cubic-bezier(0.35, 1.3, 0.25, 1);
-    }
-
-    * { box-sizing: border-box; }
-
-    html, body {
-      min-width: 100%;
-      min-height: 100%;
-      margin: 0;
-    }
-
-    body {
-      min-height: 100vh;
-      background: #e9edf0;
-      color: var(--text-primary);
-      font-family: "Neue Haas Unica W1G", "Helvetica Neue", Arial, sans-serif;
-    }
-
-    button { font: inherit; }
-
-    .tabs-bar {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      height: 64px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255,255,255,.94);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(0,0,0,.08);
-    }
-
-    .tabs-nav {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .tabs {
-      display: inline-flex;
-      gap: 4px;
-      padding: 4px;
-      border-radius: 12px;
-      background: rgba(36,74,127,.06);
-    }
-
-    .restart-button {
-      height: 36px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 0 12px;
-      border: 0;
-      border-radius: 9px;
-      background: #fff;
-      color: rgba(0,0,0,.8);
-      box-shadow: 0 1px 4px rgba(0,0,0,.08);
-      cursor: pointer;
-      font-size: 13px;
-      line-height: 16px;
-      transition: background-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
-    }
-
-    .restart-button:hover {
-      background: #f7f8f9;
-      box-shadow: 0 2px 8px rgba(0,0,0,.10);
-    }
-
-    .restart-button:active {
-      transform: scale(.98);
-    }
-
-    .restart-button img {
-      width: 16px;
-      height: 16px;
-      display: block;
-      flex: 0 0 16px;
-    }
-
-    .tab {
-      height: 36px;
-      padding: 0 14px;
-      border: 0;
-      border-radius: 9px;
-      background: transparent;
-      color: rgba(0,0,0,.54);
-      cursor: pointer;
-      font-size: 13px;
-      line-height: 16px;
-      transition: background-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
-    }
-
-    .tab[aria-selected="true"] {
-      background: #fff;
-      color: rgba(0,0,0,.8);
-      box-shadow: 0 1px 4px rgba(0,0,0,.08);
-    }
-
-    .view {
-      min-height: calc(100vh - 64px);
-      display: none;
-      align-items: start;
-      justify-items: center;
-      padding: 24px 32px;
-    }
-
-    #notification-view {
-      height: calc(100vh - 64px);
-      min-height: 0;
-      overflow: hidden;
-    }
-
-    #notification-view .notification-layout {
-      height: 100%;
-    }
-
-    #notification-view .notification-demo,
-    #notification-view .flow-guide {
-      height: 100%;
-      min-height: 0;
-    }
-
-    .view.is-active { display: grid; }
-
-    .notification-demo,
-    .panel-stage {
-      width: 100%;
-      height: 1120px;
-      position: relative;
-      overflow: hidden;
-      border-radius: 24px;
-      background: var(--canvas);
-    }
-
-    .notification-demo {
-      display: grid;
-      place-items: center;
-    }
-
-    .notification-card {
-      width: 288px;
-      min-height: 74px;
-      position: relative;
-      border: 1px solid #fff;
-      border-radius: var(--radius);
-      background: var(--card-default);
-      transition: background-color var(--motion), box-shadow var(--motion);
-    }
-
-    .notification-card:hover {
-      background: var(--card-hover);
-      box-shadow: var(--shadow-card);
-    }
-
-    .notification-header {
-      width: 100%;
-      min-height: 72px;
-      display: flex;
-      align-items: flex-start;
-      gap: 16px;
-      padding: 16px 16px 16px 20px;
-    }
-
-    .notification-copy {
-      flex: 1 1 auto;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 2px;
-      overflow: hidden;
-    }
-
-    .notification-caption {
-      margin: 0;
-      font-family: "Neue Haas Unica W1G", "Helvetica Neue", Arial, sans-serif;
-      font-size: 13px;
-      line-height: 20px;
-      font-weight: 400;
-      letter-spacing: 0;
-      color: #9299A2;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: clip;
-    }
-
-    .notification-title {
-      margin: 0;
-      font-family: "Neue Haas Unica W1G", "Helvetica Neue", Arial, sans-serif;
-      font-size: 15px;
-      line-height: 20px;
-      font-weight: 400;
-      letter-spacing: 0;
-      color: rgba(0,0,0,.8);
-      white-space: nowrap;
-      overflow: hidden;
-    }
-
-    .notification-title.wrap {
-      display: block;
-      max-height: 40px;
-      white-space: normal;
-      overflow: hidden;
-      background: linear-gradient(
-        90deg,
-        rgba(0,0,0,.8) 0%,
-        rgba(0,0,0,.8) 85.065%,
-        rgba(0,0,0,0) 100%
-      );
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      color: transparent;
-    }
-
-    .notification-avatar {
-      width: 32px;
-      height: 32px;
-      flex: 0 0 32px;
-      display: grid;
-      place-items: center;
-      border-radius: 16px;
-      background: var(--avatar-blue);
-    }
-
-    .notification-avatar.neutral { background: rgba(0,0,0,.03); }
-    .notification-avatar.soft { background: var(--neutral-1); }
-    .notification-avatar.negative { background: rgba(245,34,34,.14); }
-    .notification-avatar.negative-strong { background: rgba(245,34,34,.25); }
-    .notification-avatar.positive { background: rgba(0,185,45,.16); }
-
-    .notification-progress {
-      width: 40px;
-      height: 40px;
-      flex: 0 0 40px;
-      display: block;
-    }
-
-    .notification-card.is-overflow {
-      display: none !important;
-    }
-
-    .add-notification-button {
-      width: 100%;
-      min-height: 40px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 0 12px;
-      border: 0;
-      border-radius: 10px;
-      background: rgba(36,74,127,.09);
-      color: rgba(0,0,0,.8);
-      cursor: pointer;
-      font-size: 13px;
-      line-height: 16px;
-      transition: background-color 140ms ease, opacity 140ms ease, transform 100ms ease;
-    }
-
-    .add-notification-button:hover:not(.is-disabled):not(.is-loading) {
-      background: rgba(36,74,127,.14);
-    }
-
-    .add-notification-button:active:not(.is-disabled) {
-      transform: scale(.98);
-    }
-
-    .add-notification-button.is-disabled {
-      opacity: .42;
-      cursor: not-allowed;
-    }
-
-    .add-notification-button.is-loading::before {
-      content: "";
-      width: 12px;
-      height: 12px;
-      border: 1.5px solid rgba(0,0,0,.18);
-      border-top-color: rgba(0,0,0,.62);
-      border-radius: 50%;
-      animation: demo-spin 700ms linear infinite;
-    }
-
-    .ptr-button {
-      width: 100%;
-      min-height: 40px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 0 12px;
-      border: 1px solid rgba(36,74,127,.12);
-      border-radius: 10px;
-      background: #fff;
-      color: rgba(0,0,0,.8);
-      cursor: pointer;
-      font-size: 13px;
-      line-height: 16px;
-      transition: background-color 140ms ease, opacity 140ms ease, transform 100ms ease;
-    }
-
-    .ptr-button:hover:not(.is-disabled):not(.is-loading) {
-      background: rgba(36,74,127,.05);
-    }
-
-    .ptr-button:active:not(.is-disabled) {
-      transform: scale(.98);
-    }
-
-    .ptr-button.is-disabled {
-      opacity: .42;
-      cursor: not-allowed;
-    }
-
-    .ptr-button.is-loading::before {
-      content: "";
-      width: 12px;
-      height: 12px;
-      border: 1.5px solid rgba(0,0,0,.18);
-      border-top-color: rgba(0,0,0,.62);
-      border-radius: 50%;
-      animation: demo-spin 700ms linear infinite;
-    }
-
-    .sidepanel {
-      transition: opacity 180ms ease;
-    }
-
-    .sidepanel.is-ptr-refreshing {
-      opacity: .42;
-    }
-
-    @keyframes demo-spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .notification-avatar img {
-      width: 20px;
-      height: 20px;
-      display: block;
-    }
-
-    .hide-anchor {
-      position: absolute;
-      left: -5px;
-      top: -5px;
-      width: 55px;
-      height: 26px;
-      pointer-events: none;
-      z-index: 3;
-    }
-
-    .hide-control {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 24px;
-      height: 24px;
-      border: 0;
-      padding: 0;
-      overflow: hidden;
-      border-radius: 999px;
-      background: #fff;
-      box-shadow: 0 10px 40px rgba(0,0,0,.14);
-      opacity: 0;
-      transform: translateX(0);
-      pointer-events: auto;
-      cursor: pointer;
-      transition:
-        width var(--motion),
-        height var(--motion),
-        transform var(--motion),
-        opacity 120ms ease;
-    }
-
-    .notification-card:hover .hide-control { opacity: 1; }
-
-    .hide-control .eye,
-    .hide-control .label {
-      position: absolute;
-      transition: opacity 100ms ease, transform var(--motion);
-    }
-
-    .hide-control .eye {
-      left: 4px;
-      top: 4px;
-      width: 16px;
-      height: 16px;
-      opacity: 1;
-      transform: translateX(0);
-      background: #9299A2;
-      -webkit-mask: url("https://www.figma.com/api/mcp/asset/5eca6078-7f03-45a0-a9ef-451dba3caef3.svg") center / 16px 16px no-repeat;
-      mask: url("https://www.figma.com/api/mcp/asset/5eca6078-7f03-45a0-a9ef-451dba3caef3.svg") center / 16px 16px no-repeat;
-    }
-
-    .hide-control .label {
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0;
-      margin: 0;
-      font-family: "Neue Haas Unica W1G", "Helvetica Neue", Arial, sans-serif;
-      font-size: 11px;
-      line-height: 13px;
-      font-weight: 400;
-      letter-spacing: 0;
-      color: #9299A2;
-      white-space: nowrap;
-      opacity: 0;
-      transform: translateX(-3px);
-    }
-
-    .hide-control:hover {
-      width: 55px;
-      height: 26px;
-      transform: translateX(4px);
-    }
-
-    .hide-control:hover .eye {
-      opacity: 0;
-      transform: translateX(6px);
-    }
-
-    .hide-control:hover .label {
-      opacity: 1;
-      transform: translateX(0);
-    }
-
-
-    .notification-card.is-hidden {
-      display: none !important;
-    }
-
-    .notification-ghost {
-      position: fixed !important;
-      margin: 0 !important;
-      z-index: 9999 !important;
-      pointer-events: none !important;
-      background: #fff !important;
-      box-shadow: var(--shadow-card) !important;
-      transform-origin: center center;
-      will-change: transform, opacity;
-    }
-
-    .notification-ghost .hide-anchor {
-      display: none !important;
-    }
-
-    .info-accessory {
-      width: 32px;
-      height: 32px;
-      flex: 0 0 32px;
-      display: block;
-    }
-
-    .panel-stage {
-      position: relative;
-    }
-
-    .sidepanel {
-      width: 320px;
-      height: 1040px;
-      position: absolute;
-      top: 40px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      background: var(--panel-bg);
-      border-radius: 0 0 24px 0;
-      overflow: visible;
-      box-shadow: 4px 0 24px rgba(0,0,0,.04);
-    }
-
-    .sidepanel-top {
-      width: 100%;
-      flex: 1 1 auto;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-      padding: 0 16px;
-      overflow: hidden;
-    }
-
-    .profile-wrap {
-      width: 100%;
-      padding: 16px 0;
-    }
-
-    .profile-cell {
-      width: 100%;
-      min-height: 56px;
-      display: flex;
-      align-items: stretch;
-      padding: 0 8px;
-      border-radius: 42px;
-      background: #fff;
-    }
-
-    .profile-avatar-wrap {
-      display: flex;
-      align-items: flex-start;
-      align-self: stretch;
-      padding: 8px 16px 8px 0;
-    }
-
-    .profile-avatar {
-      width: 40px;
-      height: 40px;
-      display: grid;
-      place-items: center;
-      border-radius: 20px;
-      background-image:
-        url("data:image/svg+xml;utf8,<svg viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%25' width='100%25' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(4.1875 1.375 -1.375 4.1875 0 -5.625)'><stop stop-color='rgb(228,215,193)' offset='0'/><stop stop-color='rgb(205,177,145)' offset='.5'/><stop stop-color='rgb(181,139,96)' offset='1'/></radialGradient></defs></svg>");
-      background-size: cover;
-      background-position: center;
-    }
-
-    .profile-avatar img {
-      width: 24px;
-      height: 24px;
-      display: block;
-      filter: brightness(0) invert(1);
-    }
-
-    .profile-name {
-      flex: 1 1 auto;
-      min-width: 0;
-      display: flex;
-      align-items: center;
-      margin: 0;
-      padding: 8px 0;
-      font-size: 15px;
-      line-height: 20px;
-      font-weight: 400;
-      color: var(--text-primary);
-      white-space: nowrap;
-    }
-
-    .profile-action {
-      width: 32px;
-      min-height: 32px;
-      align-self: center;
-      display: grid;
-      place-items: center;
-      margin-left: 16px;
-      padding: 0;
-      border: 0;
-      border-radius: 8px;
-      background: transparent;
-    }
-
-    .profile-action-icon {
-      width: 16px;
-      height: 16px;
-      background: var(--text-tertiary);
-      -webkit-mask: url("https://www.figma.com/api/mcp/asset/fb240340-a820-40a2-8411-a595fa4a7249.svg") center / 16px 16px no-repeat;
-      mask: url("https://www.figma.com/api/mcp/asset/fb240340-a820-40a2-8411-a595fa4a7249.svg") center / 16px 16px no-repeat;
-    }
-
-    .events {
-      width: 288px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-      padding-bottom: 0;
-    }
-
-    .events .notification-card { flex: 0 0 auto; }
-
-    .all-notifications {
-      width: auto;
-      min-width: 0;
-      height: 32px;
-      min-height: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 2px;
-      padding: 4px 10px;
-      border: 0;
-      border-radius: 1000px;
-      background: var(--neutral-1);
-      color: var(--text-primary);
-      cursor: pointer;
-      transition:
-        background-color 160ms ease,
-        color 160ms ease,
-        transform 120ms ease;
-    }
-
-    .all-notifications:hover {
-      background: rgba(36,74,127,.09);
-      color: var(--text-primary);
-    }
-
-    .all-notifications:active {
-      transform: scale(.98);
-    }
-
-    .all-notifications-label {
-      padding: 4px 2px;
-      font-family: "Neue Haas Unica W1G", "Helvetica Neue", Arial, sans-serif;
-      font-size: 13px;
-      line-height: 16px;
-      font-weight: 400;
-      letter-spacing: 0;
-      white-space: nowrap;
-    }
-
-    .count-badge {
-      position: relative;
-      width: 16px;
-      min-width: 16px;
-      height: 16px;
-      display: inline-grid;
-      place-items: center;
-      overflow: hidden;
-      padding: 0;
-      border-radius: 100px;
-      background: #f52222;
-      color: #fff;
-      font-family: "Neue Haas Unica W1G", "Helvetica Neue", Arial, sans-serif;
-      font-size: 11px;
-      line-height: 1;
-      transform-origin: center;
-      transition:
-        opacity 160ms ease,
-        transform 160ms ease,
-        min-width 160ms ease;
-    }
-
-    .count-badge.is-empty {
-      width: 0;
-      min-width: 0;
-      padding: 0;
-      opacity: 0;
-      transform: scale(.72);
-    }
-
-    .count-badge-value {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      width: 16px;
-      height: 16px;
-      margin: auto;
-      line-height: 1;
-      text-align: center;
-      font-variant-numeric: tabular-nums;
-      transform-origin: center;
-      will-change: transform, opacity, filter;
-    }
-
-    .count-badge-value.is-incoming {
-      position: absolute;
-      inset: 0;
-    }
-
-    .docs-card {
-      width: 288px;
-      min-height: 80px;
-      margin-top: 16px;
-      display: flex;
-      align-items: flex-start;
-      border: 1px solid #fff;
-      border-radius: 24px;
-      background: rgba(255,255,255,.6);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-    }
-
-    .docs-content {
-      width: 100%;
-      display: flex;
-      align-items: flex-start;
-      gap: 16px;
-      padding: 16px 16px 16px 20px;
-    }
-
-    .docs-copy {
-      flex: 1 1 auto;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .docs-title {
-      margin: 0;
-      font-size: 17px;
-      line-height: 24px;
-      font-weight: 500;
-      color: var(--text-primary);
-    }
-
-    .docs-subtitle {
-      margin: 0;
-      font-size: 13px;
-      line-height: 20px;
-      font-weight: 400;
-      color: var(--text-secondary);
-    }
-
-    .docs-avatar {
-      width: 40px;
-      height: 40px;
-      flex: 0 0 40px;
-      display: grid;
-      place-items: center;
-      border-radius: 20px;
-      background: var(--neutral-1);
-    }
-
-    .docs-avatar img {
-      width: 24px;
-      height: 24px;
-      display: block;
-    }
-
-    .chat-area {
-      width: 320px;
-      display: flex;
-      justify-content: flex-end;
-      align-items: flex-end;
-      padding: 0 16px 16px;
-    }
-
-    .chat-button {
-      width: 56px;
-      height: 56px;
-      display: grid;
-      place-items: center;
-      padding: 16px;
-      border: 0;
-      border-radius: 1000px;
-      background: #ffdd2d;
-      cursor: pointer;
-    }
-
-    .chat-button img {
-      width: 24px;
-      height: 24px;
-      display: block;
-    }
-
-
-    .knowledge-layout {
-      display: grid;
-      gap: 24px;
-      align-items: start;
-    }
-
-    .notification-layout {
-      width: min(1140px, 100%);
-      grid-template-columns: minmax(0, 756px) 360px;
-      align-items: stretch;
-    }
-
-    .panel-layout {
-      width: min(1404px, 100%);
-      grid-template-columns: 240px minmax(0, 756px) 360px;
-    }
-
-    .demo-sidebar {
-      width: 240px;
-      height: fit-content;
-      align-self: start;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      padding: 18px;
-      border: 1px solid rgba(255,255,255,.58);
-      border-radius: 18px;
-      background: rgba(255,255,255,.60);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      box-shadow: 0 10px 30px rgba(0,0,0,.07);
-    }
-
-    .demo-sidebar-title {
-      margin: 0;
-      font-size: 15px;
-      line-height: 20px;
-      font-weight: 500;
-      color: rgba(0,0,0,.82);
-    }
-
-    .demo-sidebar-caption {
-      margin: -10px 0 0;
-      font-size: 12px;
-      line-height: 17px;
-      color: rgba(0,0,0,.48);
-    }
-
-    .demo-sidebar-divider {
-      width: 100%;
-      height: 1px;
-      background: rgba(0,0,0,.08);
-    }
-
-    .demo-sidebar-stat {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-
-    .demo-sidebar-stat-label {
-      font-size: 11px;
-      line-height: 13px;
-      color: rgba(0,0,0,.42);
-    }
-
-    .demo-sidebar-stat-value {
-      font-size: 13px;
-      line-height: 18px;
-      color: rgba(0,0,0,.72);
-    }
-
-
-    .height-control {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding: 12px;
-      border-radius: 12px;
-      background: rgba(255,255,255,.56);
-      border: 1px solid rgba(36,74,127,.06);
-    }
-
-    .height-control-head {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .height-control-title {
-      font-size: 12px;
-      line-height: 16px;
-      color: rgba(0,0,0,.54);
-    }
-
-    .height-control-value {
-      font-size: 13px;
-      line-height: 18px;
-      font-variant-numeric: tabular-nums;
-      color: rgba(0,0,0,.8);
-    }
-
-    .height-range {
-      width: 100%;
-      height: 20px;
-      margin: 0;
-      accent-color: #244A7F;
-      cursor: ew-resize;
-    }
-
-    .height-control-scale {
-      display: flex;
-      justify-content: space-between;
-      font-size: 10px;
-      line-height: 13px;
-      color: rgba(0,0,0,.38);
-    }
-
-    .demo-sidebar-hint {
-      margin: 0;
-      font-size: 12px;
-      line-height: 17px;
-      color: rgba(0,0,0,.48);
-    }
-
-
-    .resize-handle {
-      position: absolute;
-      left: 50%;
-      bottom: -12px;
-      z-index: 30;
-      width: 84px;
-      height: 24px;
-      display: grid;
-      place-items: center;
-      transform: translateX(-50%);
-      border-radius: 999px;
-      cursor: ns-resize;
-      touch-action: none;
-      user-select: none;
-    }
-
-    .resize-handle::before {
-      content: "";
-      width: 44px;
-      height: 5px;
-      border-radius: 999px;
-      background: rgba(0,0,0,.20);
-      box-shadow: 0 0 0 4px rgba(255,255,255,.75);
-    }
-
-    .resize-handle:hover::before,
-    .resize-handle.is-resizing::before {
-      background: rgba(0,0,0,.34);
-    }
-
-    .limit-toast {
-      position: fixed;
-      top: 76px;
-      left: 50%;
-      z-index: 2000;
-      max-width: 420px;
-      padding: 10px 14px;
-      border-radius: 12px;
-      background: rgba(0,0,0,.84);
-      color: #fff;
-      font-size: 13px;
-      line-height: 18px;
-      text-align: center;
-      opacity: 0;
-      transform: translate(-50%, -8px);
-      pointer-events: none;
-      transition: opacity 160ms ease, transform 160ms ease;
-    }
-
-    .limit-toast.is-visible {
-      opacity: 1;
-      transform: translate(-50%, 0);
-    }
-
-    .flow-guide {
-      width: 360px;
-      height: 1120px;
-      padding: 24px;
-      overflow: auto;
-      border-radius: 24px;
-      background: #fff;
-      box-shadow: 0 12px 36px rgba(0,0,0,.08);
-    }
-
-    .flow-guide-header {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      margin-bottom: 20px;
-    }
-
-    .flow-guide-title {
-      margin: 0;
-      font-size: 20px;
-      line-height: 26px;
-      font-weight: 500;
-      color: rgba(0,0,0,.86);
-    }
-
-    .flow-guide-subtitle {
-      margin: 0;
-      font-size: 13px;
-      line-height: 18px;
-      color: rgba(0,0,0,.48);
-    }
-
-    .flow-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
-
-    .flow-item {
-      padding: 16px 0;
-      border-top: 1px solid rgba(0,0,0,.08);
-    }
-
-    .flow-item:first-child {
-      border-top: 0;
-      padding-top: 0;
-    }
-
-    .flow-item:last-child {
-      padding-bottom: 0;
-    }
-
-    .flow-item-top {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-    }
-
-    .flow-item-copy {
-      flex: 1 1 auto;
-      min-width: 0;
-    }
-
-    .flow-item-title {
-      margin: 0;
-      font-size: 15px;
-      line-height: 20px;
-      font-weight: 500;
-      color: rgba(0,0,0,.82);
-    }
-
-    .flow-item-description {
-      margin: 4px 0 0;
-      font-size: 13px;
-      line-height: 18px;
-      color: rgba(0,0,0,.54);
-    }
-
-    .copy-params {
-      width: 32px;
-      height: 32px;
-      flex: 0 0 32px;
-      display: grid;
-      place-items: center;
-      padding: 0;
-      border: 0;
-      border-radius: 9px;
-      background: rgba(36,74,127,.06);
-      color: rgba(0,0,0,.62);
-      cursor: pointer;
-      transition: background-color 140ms ease, transform 100ms ease;
-    }
-
-    .copy-params:hover {
-      background: rgba(36,74,127,.10);
-    }
-
-    .copy-params:active {
-      transform: scale(.96);
-    }
-
-    .copy-params::before {
-      content: "";
-      width: 14px;
-      height: 14px;
-      display: block;
-      background:
-        linear-gradient(currentColor,currentColor) 3px 1px/9px 9px no-repeat,
-        linear-gradient(#fff,#fff) 5px 3px/5px 5px no-repeat,
-        linear-gradient(currentColor,currentColor) 1px 4px/9px 9px no-repeat,
-        linear-gradient(#fff,#fff) 3px 6px/5px 5px no-repeat;
-      opacity: .8;
-    }
-
-    .copy-params.is-copied {
-      background: rgba(56,165,86,.12);
-      color: rgb(46,132,70);
-    }
-
-    .copy-params.is-copied::before {
-      content: "✓";
-      width: auto;
-      height: auto;
-      background: none;
-      font-size: 15px;
-      line-height: 1;
-      font-weight: 600;
-    }
-
-    .flow-params {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 10px;
-    }
-
-    .flow-param {
-      min-height: 24px;
-      display: inline-flex;
-      align-items: center;
-      padding: 3px 8px;
-      border-radius: 8px;
-      background: #f5f6f7;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 11px;
-      line-height: 16px;
-      color: rgba(0,0,0,.62);
-      white-space: nowrap;
-    }
-
-    .copy-toast {
-      position: fixed;
-      left: 50%;
-      bottom: 28px;
-      z-index: 1000;
-      padding: 9px 12px;
-      border-radius: 10px;
-      background: rgba(0,0,0,.82);
-      color: #fff;
-      font-size: 13px;
-      line-height: 18px;
-      opacity: 0;
-      transform: translate(-50%, 8px);
-      pointer-events: none;
-      transition: opacity 160ms ease, transform 160ms ease;
-    }
-
-    .copy-toast.is-visible {
-      opacity: 1;
-      transform: translate(-50%, 0);
-    }
-
-    @media (max-width: 1460px) {
-      .panel-layout {
-        width: min(1140px, 100%);
-        grid-template-columns: minmax(0, 756px) 360px;
-      }
-
-      .panel-layout .demo-sidebar {
-        display: none;
-      }
-    }
-
-    @media (max-width: 1180px) {
-      .notification-layout,
-      .panel-layout {
-        width: min(756px, 100%);
-        grid-template-columns: minmax(0, 1fr);
-      }
-
-      .flow-guide {
-        width: 100%;
-        height: auto;
-        min-height: 720px;
-      }
-    }
-
-    @media (max-width: 820px) {
-      .view { padding: 16px; }
-
-      .notification-demo,
-      .panel-stage {
-        width: min(756px, calc(100vw - 32px));
-      }
-    }
-  </style>
+  <title>ЦУ — нотификации и правая панель</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="tabs-bar">
@@ -1172,7 +14,7 @@
         <button class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-view" data-tab="panel-view">Правая панель</button>
       </div>
       <button class="restart-button" id="restart-button" type="button" aria-label="Перезагрузить прототип" title="Перезагрузить прототип">
-        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPG1hc2sgaWQ9Im1hc2swXzEwODc5XzMzMzUxMyIgc3R5bGU9Im1hc2stdHlwZTphbHBoYSIgbWFza1VuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeD0iMCIgeT0iMCIgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2Ij4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0xMC4zNDI1IDQuNzg5MzlDOS40NzAxOSA0LjIwNjk5IDguNDE2MyAzLjk2MDcxIDcuMzc2MjcgNC4wOTYyNEM2LjMzNjI0IDQuMjMxNzYgNS4zODA2NSA0LjczOTg5IDQuNjg2NzYgNS41MjYzN0MzLjk5Mjg4IDYuMzEyODUgMy42MDc3OCA3LjMyNDMxIDMuNjAyOTEgOC4zNzMxMkMzLjU5ODA0IDkuNDIxOTMgMy45NzM3MiAxMC40MzY5IDQuNjYwMjggMTEuMjI5OEM1LjM0NjgzIDEyLjAyMjcgNi4yOTc2NSAxMi41Mzk3IDcuMzM2MzggMTIuNjg0OUM4LjM3NTExIDEyLjgzIDkuNDMxMjQgMTIuNTkzNiAxMC4zMDg5IDEyLjAxOTNMMTEuMDM4OSAxMy4xMzVDOS44OTEyNSAxMy44ODYgOC41MTAxNiAxNC4xOTUyIDcuMTUxODIgMTQuMDA1NEM1Ljc5MzQ4IDEzLjgxNTUgNC41NTAxIDEzLjEzOTUgMy42NTIzIDEyLjEwMjZDMi43NTQ1IDExLjA2NTcgMi4yNjMyMiA5LjczODQ1IDIuMjY5NTkgOC4zNjY5M0MyLjI3NTk2IDYuOTk1NCAyLjc3OTU1IDUuNjcyNzMgMy42ODY5NCA0LjY0NDI2QzQuNTk0MzMgMy42MTU3OCA1Ljg0Mzk0IDIuOTUxMyA3LjIwMzk4IDIuNzc0MDhDOC41NjQwMiAyLjU5Njg2IDkuOTQyMTkgMi45MTg5MiAxMS4wODI4IDMuNjgwNTJMMTAuMzQyNSA0Ljc4OTM5WiIgZmlsbD0idXJsKCNwYWludDBfbGluZWFyXzEwODc5XzMzMzUxMykiLz4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0xMi4xMDg2IDkuNTYyMjJDMTIuMzkxNSA4LjU1MjI2IDEyLjI5ODQgNy40NzM5OCAxMS44NDY4IDYuNTI3NEwxMy4wNTAxIDUuOTUzMjFDMTMuNjQwOCA3LjE5MTA2IDEzLjc2MjQgOC42MDExMSAxMy4zOTI1IDkuOTIxODNDMTMuMDIyNiAxMS4yNDI1IDEyLjE4NjIgMTIuMzg0MyAxMS4wMzg2IDEzLjEzNTJMMTAuMzA4NSAxMi4wMTk1QzExLjE4NjEgMTEuNDQ1MyAxMS44MjU3IDEwLjU3MjIgMTIuMTA4NiA5LjU2MjIyWiIgZmlsbD0idXJsKCNwYWludDFfbGluZWFyXzEwODc5XzMzMzUxMykiLz4KPHBhdGggZD0iTTExLjMyMDEgMS4xOTkyMkw4LjMyMDA3IDYuMzk1MzdMMTMuMjUwNiA1Ljc3NzkzTDExLjMyMDEgMS4xOTkyMloiIGZpbGw9ImJsYWNrIi8+CjwvbWFzaz4KPGcgbWFzaz0idXJsKCNtYXNrMF8xMDg3OV8zMzM1MTMpIj4KPHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiBmaWxsPSIjMDAxMDI0IiBmaWxsLW9wYWNpdHk9IjAuMjIiLz4KPC9nPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDBfbGluZWFyXzEwODc5XzMzMzUxMyIgeDE9IjQuMTA4ODMiIHkxPSIxNC4zNTU5IiB4Mj0iNi4wMTA3NiIgeTI9IjUuMDYxNjYiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1vcGFjaXR5PSIwLjk0Ii8+CjxzdG9wIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MV9saW5lYXJfMTA4NzlfMzMzNTEzIiB4MT0iMTEuMjI3MiIgeTE9IjEyLjY5MjciIHgyPSIxMy45OTk5IiB5Mj0iOC4zMzM0IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLW9wYWNpdHk9IjAiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K" alt="" />
+        <img src="assets/restart-16.svg" alt="" />
         <span>Перезагрузить</span>
       </button>
     </div>
@@ -1180,33 +22,33 @@
 
   <section id="notification-view" class="view is-active" role="tabpanel">
     <div class="knowledge-layout notification-layout">
-<main class="notification-demo">
-      <article class="notification-card" data-notification>
-        <div class="notification-header">
-          <div class="notification-copy">
-            <p class="notification-caption">Документы на подпись</p>
-            <p class="notification-title">1 документ</p>
+      <main class="notification-demo">
+        <article class="notification-card" data-notification>
+          <div class="notification-header">
+            <div class="notification-copy">
+              <p class="notification-caption">Документы на подпись</p>
+              <p class="notification-title">1 документ</p>
+            </div>
+            <div class="notification-avatar" aria-hidden="true">
+              <img src="assets/pencil-20.svg" alt="" />
+            </div>
           </div>
-          <div class="notification-avatar" aria-hidden="true">
-            <img src="https://www.figma.com/api/mcp/asset/c5555972-460b-4016-85e1-34f3c7d98d2b.svg" alt="" />
+          <div class="hide-anchor">
+            <button class="hide-control" type="button" aria-label="Скрыть уведомление">
+              <span class="eye" aria-hidden="true"></span>
+              <span class="label">Скрыть</span>
+            </button>
           </div>
-        </div>
-        <div class="hide-anchor">
-          <button class="hide-control" type="button" aria-label="Скрыть уведомление">
-            <span class="eye" aria-hidden="true"></span>
-            <span class="label">Скрыть</span>
-          </button>
-        </div>
-      </article>
-    </main>
+        </article>
+      </main>
 
       <aside class="flow-guide" aria-label="Описание механики нотификации">
         <div class="flow-guide-header">
           <h2 class="flow-guide-title">Механика нотификации</h2>
           <p class="flow-guide-subtitle">Короткая спека для реализации и проверки поведения.</p>
         </div>
-        <div class="flow-list">
 
+        <div class="flow-list">
           <div class="flow-item">
             <div class="flow-item-top">
               <div class="flow-item-copy">
@@ -1215,7 +57,11 @@
               </div>
               <button class="copy-params" type="button" aria-label="Скопировать параметры" data-copy="duration: 180ms; easing: cubic-bezier(.2,.8,.2,1); background: #fff; shadow: 0 14px 21px rgba(0,0,0,.12);"></button>
             </div>
-            <div class="flow-params"><span class="flow-param">180ms</span><span class="flow-param">ease: .2 .8 .2 1</span><span class="flow-param">bg → #FFF</span></div>
+            <div class="flow-params">
+              <span class="flow-param">180ms</span>
+              <span class="flow-param">ease: .2 .8 .2 1</span>
+              <span class="flow-param">bg → #FFF</span>
+            </div>
           </div>
 
           <div class="flow-item">
@@ -1226,7 +72,11 @@
               </div>
               <button class="copy-params" type="button" aria-label="Скопировать параметры" data-copy="from: 24x24; to: 55x26; translateX: 4px; duration: 180ms; easing: cubic-bezier(.2,.8,.2,1);"></button>
             </div>
-            <div class="flow-params"><span class="flow-param">24×24 → 55×26</span><span class="flow-param">translateX: 4px</span><span class="flow-param">180ms</span></div>
+            <div class="flow-params">
+              <span class="flow-param">24×24 → 55×26</span>
+              <span class="flow-param">translateX: 4px</span>
+              <span class="flow-param">180ms</span>
+            </div>
           </div>
 
           <div class="flow-item">
@@ -1237,7 +87,11 @@
               </div>
               <button class="copy-params" type="button" aria-label="Скопировать параметры" data-copy="duration: 500ms; easing: cubic-bezier(0.35,1.3,0.25,1); opacity: 1→0; scale: 1→0.86; translateY: 0→-4px;"></button>
             </div>
-            <div class="flow-params"><span class="flow-param">500ms</span><span class="flow-param">scale: 1 → .86</span><span class="flow-param">y: 0 → -4</span></div>
+            <div class="flow-params">
+              <span class="flow-param">500ms</span>
+              <span class="flow-param">scale: 1 → .86</span>
+              <span class="flow-param">y: 0 → -4</span>
+            </div>
           </div>
 
           <div class="flow-item">
@@ -1248,7 +102,11 @@
               </div>
               <button class="copy-params" type="button" aria-label="Скопировать параметры" data-copy="font-size: 15px; line-height: 20px; fade-start: 85.065%; ellipsis: none;"></button>
             </div>
-            <div class="flow-params"><span class="flow-param">fade-point: 85.065%</span><span class="flow-param">15/20</span><span class="flow-param">no ellipsis</span></div>
+            <div class="flow-params">
+              <span class="flow-param">fade-point: 85.065%</span>
+              <span class="flow-param">15/20</span>
+              <span class="flow-param">no ellipsis</span>
+            </div>
           </div>
         </div>
       </aside>
@@ -1262,11 +120,11 @@
         <p class="demo-sidebar-caption">Правая панель</p>
         <div class="demo-sidebar-divider"></div>
 
-        <button class="add-notification-button" id="add-notification-button" type="button" aria-disabled="false">
+        <button class="demo-button" id="add-notification-button" type="button" aria-disabled="false">
           Добавить нотификацию
         </button>
 
-        <button class="ptr-button" id="ptr-button" type="button" aria-disabled="false">
+        <button class="demo-button is-secondary" id="ptr-button" type="button" aria-disabled="false">
           PTR · Перезагрузить страницу
         </button>
 
@@ -1299,106 +157,106 @@
         <p class="demo-sidebar-hint">Меняй высоту здесь или тяни нижнюю границу колонки. Состав карточек пересчитывается в реальном времени.</p>
       </aside>
 
-    <div class="panel-stage">
-      <aside class="sidepanel">
-        <div class="sidepanel-top">
-          <div class="profile-wrap">
-            <div class="profile-cell">
-              <div class="profile-avatar-wrap">
-                <div class="profile-avatar" aria-hidden="true">
-                  <img src="https://www.figma.com/api/mcp/asset/9dd53209-be13-43d1-8bad-5721ebe1d544.svg" alt="" />
+      <div class="panel-stage">
+        <aside class="sidepanel">
+          <div class="sidepanel-top">
+            <div class="profile-wrap">
+              <div class="profile-cell">
+                <div class="profile-avatar-wrap">
+                  <div class="profile-avatar" aria-hidden="true">
+                    <img src="assets/briefcase-24.svg" alt="" />
+                  </div>
                 </div>
+                <p class="profile-name">ИП Лукьянюк Н.</p>
+                <button class="profile-action" type="button" aria-label="Сменить профиль">
+                  <span class="profile-action-icon" aria-hidden="true"></span>
+                </button>
               </div>
-              <p class="profile-name">ИП Лукьянюк Н.</p>
-              <button class="profile-action" type="button" aria-label="Сменить профиль">
-                <span class="profile-action-icon" aria-hidden="true"></span>
+            </div>
+
+            <div class="events">
+              <article class="notification-card" data-notification data-protected="action">
+                <div class="notification-header">
+                  <div class="notification-copy">
+                    <p class="notification-caption">Документы на подпись</p>
+                    <p class="notification-title">1 документ</p>
+                  </div>
+                  <div class="notification-avatar" aria-hidden="true">
+                    <img src="assets/avatar-docs-sign.svg" alt="" />
+                  </div>
+                </div>
+              </article>
+
+              <article class="notification-card" data-notification>
+                <div class="notification-header">
+                  <div class="notification-copy">
+                    <p class="notification-caption">Обновление документов</p>
+                    <p class="notification-title">Загрузите их до 25 октября</p>
+                  </div>
+                  <div class="notification-avatar neutral" aria-hidden="true">
+                    <img src="assets/avatar-docs-update.svg" alt="" />
+                  </div>
+                </div>
+                <div class="hide-anchor">
+                  <button class="hide-control" type="button" aria-label="Скрыть уведомление">
+                    <span class="eye" aria-hidden="true"></span>
+                    <span class="label">Скрыть</span>
+                  </button>
+                </div>
+              </article>
+
+              <article class="notification-card" data-notification>
+                <div class="notification-header">
+                  <div class="notification-copy">
+                    <p class="notification-caption">Поможем с налогами</p>
+                    <p class="notification-title wrap">Воспользуйтесь овердрафтом для оплаты налогов</p>
+                  </div>
+                  <img class="info-accessory" src="assets/info-32.svg" alt="" aria-hidden="true" />
+                </div>
+                <div class="hide-anchor">
+                  <button class="hide-control" type="button" aria-label="Скрыть уведомление">
+                    <span class="eye" aria-hidden="true"></span>
+                    <span class="label">Скрыть</span>
+                  </button>
+                </div>
+              </article>
+
+              <button class="all-notifications" type="button">
+                <span class="all-notifications-label">Все уведомления</span>
+                <span class="count-badge is-empty" data-count="0" aria-label="Скрыто по высоте: 0"></span>
               </button>
             </div>
+
+            <article class="docs-card">
+              <div class="docs-content">
+                <div class="docs-copy">
+                  <p class="docs-title">Документы</p>
+                  <p class="docs-subtitle">Подписать и отправить</p>
+                </div>
+                <div class="docs-avatar" aria-hidden="true">
+                  <img src="assets/pencil-24.svg" alt="" />
+                </div>
+              </div>
+            </article>
           </div>
 
-          <div class="events">
-            <article class="notification-card" data-notification data-protected="action">
-              <div class="notification-header">
-                <div class="notification-copy">
-                  <p class="notification-caption">Документы на подпись</p>
-                  <p class="notification-title">1 документ</p>
-                </div>
-                <div class="notification-avatar" aria-hidden="true">
-                  <img src="https://www.figma.com/api/mcp/asset/404b74de-55eb-4628-988c-044b204b3b15.svg" alt="" />
-                </div>
-              </div>
-</article>
-
-            <article class="notification-card" data-notification>
-              <div class="notification-header">
-                <div class="notification-copy">
-                  <p class="notification-caption">Обновление документов</p>
-                  <p class="notification-title">Загрузите их до 25 октября</p>
-                </div>
-                <div class="notification-avatar neutral" aria-hidden="true">
-                  <img src="https://www.figma.com/api/mcp/asset/1bf76f47-0acd-46a9-abfb-8a0f93ca58ea.svg" alt="" />
-                </div>
-              </div>
-              <div class="hide-anchor">
-                <button class="hide-control" type="button" aria-label="Скрыть уведомление">
-                  <span class="eye" aria-hidden="true"></span>
-                  <span class="label">Скрыть</span>
-                </button>
-              </div>
-            </article>
-
-            <article class="notification-card" data-notification>
-              <div class="notification-header">
-                <div class="notification-copy">
-                  <p class="notification-caption">Поможем с налогами</p>
-                  <p class="notification-title wrap">Воспользуйтесь овердрафтом для оплаты налогов</p>
-                </div>
-                <img class="info-accessory" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iMTYiIGZpbGw9IiMyNDRBN0YiIGZpbGwtb3BhY2l0eT0iMC4wNiIvPgo8bWFzayBpZD0ibWFzazBfMTA1OTVfNDU1NDIiIHN0eWxlPSJtYXNrLXR5cGU6YWxwaGEiIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjYiIHk9IjYiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNNi44MzMyNSAxNS45OTk3QzYuODMzMjUgMTAuOTM3MSAxMC45MzczIDYuODMzMDEgMTUuOTk5OSA2LjgzMzAxQzIxLjA2MjUgNi44MzMwMSAyNS4xNjY2IDEwLjkzNzEgMjUuMTY2NiAxNS45OTk3QzI1LjE2NjYgMjEuMDYyMyAyMS4wNjI1IDI1LjE2NjMgMTUuOTk5OSAyNS4xNjYzQzEwLjkzNzMgMjUuMTY2MyA2LjgzMzI1IDIxLjA2MjMgNi44MzMyNSAxNS45OTk3Wk0xNC43NDk5IDExLjUyMzJDMTQuNzQ5OSAxMi4wOTg0IDE1LjIxNjMgMTIuNTY0OCAxNS43OTE2IDEyLjU2NDhIMTcuMDYyNFYxMS41MjMyQzE3LjA2MjQgMTAuOTQ3OSAxNi41OTYgMTAuNDgxNSAxNi4wMjA4IDEwLjQ4MTVIMTQuNzQ5OVYxMS41MjMyWk0xNy42NjY2IDE4Ljg2MjRIMTcuMDQxNlYxNC43ODM1QzE3LjA0MTYgMTQuMzIzMiAxNi42Njg1IDEzLjgxNDggMTYuMjA4MyAxMy44MTQ4SDEzLjcwODNWMTQuNzgzNUMxMy43MDgzIDE1LjI0MzcgMTQuMDgxMyAxNS42ODQyIDE0LjU0MTYgMTUuNjg0MkgxNC45NTgzVjE4Ljg2MjRMMTMuNDk5OSAxOC44NjI0VjE5Ljc0OTdDMTMuNDk5OSAyMC4yMDk5IDE0LjA4MTMgMjAuNTgzIDE0LjU0MTYgMjAuNTgzSDE4LjQ5OTlWMTkuNzQ5N0MxOC40OTk5IDE5LjI4OTQgMTguMTI2OCAxOC44NjI0IDE3LjY2NjYgMTguODYyNFoiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcl8xMDU5NV80NTU0MikiLz4KPC9tYXNrPgo8ZyBtYXNrPSJ1cmwoI21hc2swXzEwNTk1XzQ1NTQyKSI+CjxwYXRoIGQ9Ik02IDZIMjZWMjZINlY2WiIgZmlsbD0iYmxhY2siIGZpbGwtb3BhY2l0eT0iMC40OCIvPgo8L2c+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXJfMTA1OTVfNDU1NDIiIHgxPSIxMC4xNjY2IiB5MT0iMTAuMTY2MyIgeDI9IjIxLjgzMzMiIHkyPSIyMS44MzMiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1vcGFjaXR5PSIwLjk1Ii8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1vcGFjaXR5PSIwLjY1Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+Cg==" alt="" aria-hidden="true" />
-              </div>
-              <div class="hide-anchor">
-                <button class="hide-control" type="button" aria-label="Скрыть уведомление">
-                  <span class="eye" aria-hidden="true"></span>
-                  <span class="label">Скрыть</span>
-                </button>
-              </div>
-            </article>
-
-            <button class="all-notifications" type="button">
-              <span class="all-notifications-label">Все уведомления</span>
-              <span class="count-badge is-empty" data-count="0" aria-label="Скрыто по высоте: 0"></span>
+          <div class="chat-area">
+            <button class="chat-button" type="button" aria-label="Открыть чат">
+              <img src="assets/chat-24.svg" alt="" />
             </button>
           </div>
 
-          <article class="docs-card">
-            <div class="docs-content">
-              <div class="docs-copy">
-                <p class="docs-title">Документы</p>
-                <p class="docs-subtitle">Подписать и отправить</p>
-              </div>
-              <div class="docs-avatar" aria-hidden="true">
-                <img src="https://www.figma.com/api/mcp/asset/a51252f3-b2fc-4dad-975a-fd9b658c995a.svg" alt="" />
-              </div>
-            </div>
-          </article>
-        </div>
-
-        <div class="chat-area">
-          <button class="chat-button" type="button" aria-label="Открыть чат">
-            <img src="https://www.figma.com/api/mcp/asset/1257b58d-ea3c-405e-9457-627f1ddffa19.svg" alt="" />
-          </button>
-        </div>
-
-        <div class="resize-handle" id="resize-handle" role="separator" aria-orientation="horizontal" aria-label="Изменить высоту правой колонки" tabindex="0"></div>
-      </aside>
-    </div>
+          <div class="resize-handle" id="resize-handle" role="separator" aria-orientation="horizontal" aria-label="Изменить высоту правой колонки" tabindex="0"></div>
+        </aside>
+      </div>
 
       <aside class="flow-guide" aria-label="Описание механики правой панели">
         <div class="flow-guide-header">
           <h2 class="flow-guide-title">Механика правой панели</h2>
           <p class="flow-guide-subtitle">Поведение стека уведомлений и вспомогательных контролов.</p>
         </div>
-        <div class="flow-list">
 
+        <div class="flow-list">
           <div class="flow-item">
             <div class="flow-item-top">
               <div class="flow-item-copy">
@@ -1407,7 +265,11 @@
               </div>
               <button class="copy-params" type="button" aria-label="Скопировать параметры" data-copy="duration: 180ms; easing: cubic-bezier(.2,.8,.2,1); background: #fff; show-hide-control: true;"></button>
             </div>
-            <div class="flow-params"><span class="flow-param">180ms</span><span class="flow-param">bg → #FFF</span><span class="flow-param">eye: 24×24</span></div>
+            <div class="flow-params">
+              <span class="flow-param">180ms</span>
+              <span class="flow-param">bg → #FFF</span>
+              <span class="flow-param">eye: 24×24</span>
+            </div>
           </div>
 
           <div class="flow-item">
@@ -1418,7 +280,11 @@
               </div>
               <button class="copy-params" type="button" aria-label="Скопировать параметры" data-copy="from: 24x24; to: 55x26; translateX: 4px; duration: 180ms; easing: cubic-bezier(.2,.8,.2,1);"></button>
             </div>
-            <div class="flow-params"><span class="flow-param">24×24 → 55×26</span><span class="flow-param">translateX: 4px</span><span class="flow-param">180ms</span></div>
+            <div class="flow-params">
+              <span class="flow-param">24×24 → 55×26</span>
+              <span class="flow-param">translateX: 4px</span>
+              <span class="flow-param">180ms</span>
+            </div>
           </div>
 
           <div class="flow-item">
@@ -1429,7 +295,11 @@
               </div>
               <button class="copy-params" type="button" aria-label="Скопировать параметры" data-copy="priority: alert(red)=1; action-required(blue)=2; hideable=3; protected-items: reserve-top-space=true;"></button>
             </div>
-            <div class="flow-params"><span class="flow-param">1 alert</span><span class="flow-param">2 action</span><span class="flow-param">3 other</span></div>
+            <div class="flow-params">
+              <span class="flow-param">1 alert</span>
+              <span class="flow-param">2 action</span>
+              <span class="flow-param">3 other</span>
+            </div>
           </div>
 
           <div class="flow-item">
@@ -1440,7 +310,11 @@
               </div>
               <button class="copy-params" type="button" aria-label="Скопировать параметры" data-copy="hide-control: alert(red)=false; action-required(blue)=false; other=true;"></button>
             </div>
-            <div class="flow-params"><span class="flow-param">red → no hide</span><span class="flow-param">blue action → no hide</span><span class="flow-param">other → hide</span></div>
+            <div class="flow-params">
+              <span class="flow-param">red → no hide</span>
+              <span class="flow-param">blue action → no hide</span>
+              <span class="flow-param">other → hide</span>
+            </div>
           </div>
 
           <div class="flow-item">
@@ -1451,7 +325,11 @@
               </div>
               <button class="copy-params" type="button" aria-label="Скопировать параметры" data-copy="layout-motion: FLIP; duration: 500ms; easing: cubic-bezier(0.35,1.3,0.25,1); hidden-card: opacity 1→0, scale 1→0.86;"></button>
             </div>
-            <div class="flow-params"><span class="flow-param">FLIP</span><span class="flow-param">500ms</span><span class="flow-param">expressive</span></div>
+            <div class="flow-params">
+              <span class="flow-param">FLIP</span>
+              <span class="flow-param">500ms</span>
+              <span class="flow-param">expressive</span>
+            </div>
           </div>
 
           <div class="flow-item">
@@ -1462,7 +340,11 @@
               </div>
               <button class="copy-params" type="button" aria-label="Скопировать параметры" data-copy="hover-background: rgba(36,74,127,.09); size: 146x32; duration: 160ms;"></button>
             </div>
-            <div class="flow-params"><span class="flow-param">width: auto</span><span class="flow-param">h: 32px</span><span class="flow-param">badge: 16×16</span></div>
+            <div class="flow-params">
+              <span class="flow-param">width: auto</span>
+              <span class="flow-param">h: 32px</span>
+              <span class="flow-param">badge: 16×16</span>
+            </div>
           </div>
 
           <div class="flow-item">
@@ -1473,7 +355,11 @@
               </div>
               <button class="copy-params" type="button" aria-label="Скопировать параметры" data-copy="counter-source: overflow-by-height-only; forced-hidden: excluded; zero-state: hidden; first-visible-value: 1; digit-duration: 220ms; digit-motion: translateY(±55%) + opacity + blur(2px); easing: cubic-bezier(.2,.8,.2,1);"></button>
             </div>
-            <div class="flow-params"><span class="flow-param">overflow only</span><span class="flow-param">220ms</span><span class="flow-param">reel + blur</span></div>
+            <div class="flow-params">
+              <span class="flow-param">overflow only</span>
+              <span class="flow-param">220ms</span>
+              <span class="flow-param">reel + blur</span>
+            </div>
           </div>
 
           <div class="flow-item">
@@ -1484,7 +370,11 @@
               </div>
               <button class="copy-params" type="button" aria-label="Скопировать параметры" data-copy="duration: 500ms; easing: cubic-bezier(0.35,1.3,0.25,1); existing-items: shift-down; new-item: opacity 0→1, scale .86→1;"></button>
             </div>
-            <div class="flow-params"><span class="flow-param">500ms</span><span class="flow-param">fade + scale</span><span class="flow-param">shift ↓</span></div>
+            <div class="flow-params">
+              <span class="flow-param">500ms</span>
+              <span class="flow-param">fade + scale</span>
+              <span class="flow-param">shift ↓</span>
+            </div>
           </div>
 
           <div class="flow-item">
@@ -1495,9 +385,13 @@
               </div>
               <button class="copy-params" type="button" aria-label="Скопировать параметры" data-copy="min-panel-height: 640px; max-visible-total: 6; max-events: 4; max-pushes: 2; all-notifications-position: after-notification-list; all-notifications-to-documents-gap: 32px; measure-container-height: true; only-fully-fitting: true; reserve-cta-space: true; resize-observer: true;"></button>
             </div>
-            <div class="flow-params"><span class="flow-param">total: 6</span><span class="flow-param">4 events + 2 push</span><span class="flow-param">CTA → Docs: 32px</span><span class="flow-param">ResizeObserver</span></div>
+            <div class="flow-params">
+              <span class="flow-param">total: 6</span>
+              <span class="flow-param">4 events + 2 push</span>
+              <span class="flow-param">CTA → Docs: 32px</span>
+              <span class="flow-param">ResizeObserver</span>
+            </div>
           </div>
-
         </div>
       </aside>
     </div>
@@ -1508,719 +402,6 @@
   </div>
   <div class="copy-toast" id="copy-toast" role="status" aria-live="polite">Параметры скопированы</div>
 
-  <script>
-    const tabs = Array.from(document.querySelectorAll('.tab'));
-    const views = Array.from(document.querySelectorAll('.view'));
-    const restartButton = document.querySelector('#restart-button');
-    const addNotificationButton = document.querySelector('#add-notification-button');
-    const ptrButton = document.querySelector('#ptr-button');
-    const resizeHandle = document.querySelector('#resize-handle');
-    const panelHeightControl = document.querySelector('#panel-height-control');
-    const panelHeightValue = document.querySelector('#panel-height-value');
-    const visibleCountValue = document.querySelector('#visible-count-value');
-    const copyToast = document.querySelector('#copy-toast');
-    const limitToast = document.querySelector('#limit-toast');
-
-    const EXPRESSIVE_DURATION = 500;
-    const EXPRESSIVE_EASING = 'cubic-bezier(0.35, 1.3, 0.25, 1)';
-    const MAX_VISIBLE_NOTIFICATIONS = 6;
-    const MIN_PANEL_HEIGHT = 640;
-    const MAX_PANEL_HEIGHT = 1040;
-
-    let copyToastTimer;
-    let limitToastTimer;
-    let incomingIndex = 0;
-
-    const incomingNotifications = [
-      {
-        caption: 'Арест от ФССП',
-        title: 'На 1000 ₽',
-        avatarClass: 'negative',
-        icon: 'https://www.figma.com/api/mcp/asset/5f3b5f0b-dc38-44b0-9698-92d1d47cf61f.svg',
-        protectedType: 'alert'
-      },
-      {
-        caption: 'Обновление документов',
-        title: 'Загрузите их заново — нашли ошибки',
-        avatarClass: 'negative-strong',
-        icon: 'https://www.figma.com/api/mcp/asset/c80948e6-02fc-4ec0-ba66-36bfabbc98bc.svg',
-        protectedType: 'alert',
-        wrap: true
-      },
-      {
-        caption: 'Бухгалтерия',
-        title: 'Бухгалтер свяжется с вами в течении 1 рабочего дня',
-        avatarClass: 'positive',
-        icon: 'https://www.figma.com/api/mcp/asset/73a4dcf5-36dc-4f02-b07b-2d221739b8a9.svg',
-        wrap: true
-      },
-      {
-        caption: 'Долями',
-        title: 'Подключаем',
-        progress: 'https://www.figma.com/api/mcp/asset/ddcd85e0-19f8-4d3a-8589-2a96133c4102.svg'
-      },
-      {
-        caption: 'Штраф за пропуск платежа',
-        title: 'Списано 3 500 ₽. Погасите просроченную задолженность',
-        avatarClass: 'negative',
-        icon: 'https://www.figma.com/api/mcp/asset/be90d98e-6506-43b7-a3f1-6ff9b2390b6a.svg',
-        protectedType: 'alert',
-        wrap: true
-      },
-      {
-        caption: 'Овердрафт',
-        title: 'Лимит овердрафта обнулен. Погасите задолженность 58',
-        avatarClass: 'negative',
-        icon: 'https://www.figma.com/api/mcp/asset/03c90e4c-be2c-4de9-a0b1-6ecd773b870d.svg',
-        protectedType: 'alert',
-        wrap: true
-      }
-    ];
-
-    async function copyText(text) {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(text);
-        return;
-      }
-
-      const textarea = document.createElement('textarea');
-      textarea.value = text;
-      textarea.style.position = 'fixed';
-      textarea.style.opacity = '0';
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      textarea.remove();
-    }
-
-    function showLimitToast() {
-      limitToast.classList.add('is-visible');
-      clearTimeout(limitToastTimer);
-      limitToastTimer = setTimeout(() => {
-        limitToast.classList.remove('is-visible');
-      }, 3000);
-    }
-
-    document.addEventListener('click', async (event) => {
-      const copyButton = event.target.closest('.copy-params');
-      if (!copyButton) return;
-
-      try {
-        await copyText(copyButton.dataset.copy || '');
-        copyButton.classList.add('is-copied');
-        clearTimeout(copyButton._copyTimer);
-        copyButton._copyTimer = setTimeout(() => copyButton.classList.remove('is-copied'), 1200);
-
-        copyToast.classList.add('is-visible');
-        clearTimeout(copyToastTimer);
-        copyToastTimer = setTimeout(() => copyToast.classList.remove('is-visible'), 1400);
-      } catch (_) {
-        copyToast.textContent = 'Не удалось скопировать';
-        copyToast.classList.add('is-visible');
-        clearTimeout(copyToastTimer);
-        copyToastTimer = setTimeout(() => {
-          copyToast.classList.remove('is-visible');
-          copyToast.textContent = 'Параметры скопированы';
-        }, 1400);
-      }
-    });
-
-    tabs.forEach((tab) => {
-      tab.addEventListener('click', () => {
-        const targetId = tab.dataset.tab;
-        tabs.forEach((item) => item.setAttribute('aria-selected', String(item === tab)));
-
-        views.forEach((view) => {
-          const active = view.id === targetId;
-          view.classList.toggle('is-active', active);
-          view.hidden = !active;
-        });
-
-        if (targetId === 'panel-view') {
-          requestAnimationFrame(applyNotificationLimit);
-        }
-      });
-    });
-
-    function captureRects(elements) {
-      return new Map(elements.map((element) => [element, element.getBoundingClientRect()]));
-    }
-
-    function playFlip(elements, firstRects) {
-      elements.forEach((element) => {
-        const first = firstRects.get(element);
-        if (!first || element.classList.contains('is-overflow')) return;
-
-        const last = element.getBoundingClientRect();
-        const deltaX = first.left - last.left;
-        const deltaY = first.top - last.top;
-
-        if (Math.abs(deltaX) < .5 && Math.abs(deltaY) < .5) return;
-
-        element.animate(
-          [
-            { transform: `translate(${deltaX}px, ${deltaY}px)` },
-            { transform: 'translate(0, 0)' }
-          ],
-          {
-            duration: EXPRESSIVE_DURATION,
-            easing: EXPRESSIVE_EASING,
-            fill: 'both'
-          }
-        );
-      });
-    }
-
-    function getMotionElements(stage, excludedCard = null) {
-      if (stage.classList.contains('sidepanel')) {
-        return Array.from(stage.querySelectorAll(
-          '.notification-card:not(.is-hidden):not(.is-overflow), .all-notifications, .docs-card'
-        )).filter((element) => element !== excludedCard);
-      }
-
-      return Array.from(stage.querySelectorAll(
-        '.notification-card:not(.is-hidden):not(.is-overflow)'
-      )).filter((element) => element !== excludedCard);
-    }
-
-    function getVisibleCards() {
-      return Array.from(document.querySelectorAll(
-        '.sidepanel .events .notification-card:not(.is-hidden):not(.is-overflow)'
-      ));
-    }
-
-    function getOverflowCards() {
-      return Array.from(document.querySelectorAll(
-        '.sidepanel .events .notification-card.is-overflow:not(.is-hidden)'
-      ));
-    }
-
-    function setPanelHeight(value) {
-      const sidepanel = document.querySelector('.sidepanel');
-      if (!sidepanel) return;
-
-      const nextHeight = Math.min(
-        MAX_PANEL_HEIGHT,
-        Math.max(MIN_PANEL_HEIGHT, Number(value))
-      );
-
-      sidepanel.style.height = `${Math.round(nextHeight)}px`;
-
-      if (panelHeightControl) {
-        panelHeightControl.value = String(Math.round(nextHeight));
-      }
-
-      if (!panelViewIsHidden()) {
-        applyNotificationLimit();
-      } else if (panelHeightValue) {
-        panelHeightValue.textContent = `${Math.round(nextHeight)} px`;
-      }
-    }
-
-    function notificationPriority(card) {
-      if (card.dataset.protected === 'alert') return 0;
-      if (card.dataset.protected === 'action') return 1;
-      return 2;
-    }
-
-    function sortNotificationsByPriority() {
-      const events = document.querySelector('.sidepanel .events');
-      if (!events) return;
-
-      const cards = Array.from(events.querySelectorAll('.notification-card'));
-
-      const allNotificationsButton = events.querySelector('.all-notifications');
-
-      cards
-        .map((card, index) => ({
-          card,
-          index,
-          priority: notificationPriority(card)
-        }))
-        .sort((a, b) => {
-          if (a.priority !== b.priority) return a.priority - b.priority;
-          return a.index - b.index;
-        })
-        .forEach(({ card }) => {
-          if (allNotificationsButton) {
-            events.insertBefore(card, allNotificationsButton);
-          } else {
-            events.appendChild(card);
-          }
-        });
-    }
-
-    function animateOverflowEnter(card) {
-      card.animate(
-        [
-          { opacity: 0, transform: 'translateY(-4px) scale(.86)' },
-          { opacity: 1, transform: 'translateY(0) scale(1)' }
-        ],
-        {
-          duration: EXPRESSIVE_DURATION,
-          easing: EXPRESSIVE_EASING,
-          fill: 'both'
-        }
-      );
-    }
-
-    function updateOverflowCounter() {
-      const badge = document.querySelector('.count-badge');
-      if (!badge) return;
-
-      const nextCount = getOverflowCards().length;
-      const previousCount = Number(badge.dataset.count || 0);
-
-      badge.setAttribute('aria-label', `Скрыто по высоте: ${nextCount}`);
-
-      if (nextCount === previousCount) return;
-
-      badge._counterVersion = (badge._counterVersion || 0) + 1;
-      const version = badge._counterVersion;
-
-      badge.querySelectorAll('.count-badge-value').forEach((value) => {
-        value.getAnimations().forEach((animation) => animation.cancel());
-      });
-
-      badge.replaceChildren();
-      badge.dataset.count = String(nextCount);
-
-      if (nextCount === 0) {
-        badge.classList.add('is-empty');
-        return;
-      }
-
-      badge.classList.remove('is-empty');
-
-      const direction = nextCount > previousCount ? 1 : -1;
-
-      if (previousCount > 0) {
-        const outgoing = document.createElement('span');
-        outgoing.className = 'count-badge-value';
-        outgoing.textContent = String(previousCount);
-        badge.appendChild(outgoing);
-
-        outgoing.animate(
-          [
-            {
-              opacity: 1,
-              transform: 'translateY(0) scale(1)',
-              filter: 'blur(0px)'
-            },
-            {
-              opacity: 0,
-              transform: `translateY(${-direction * 55}%) scale(.92)`,
-              filter: 'blur(2px)'
-            }
-          ],
-          {
-            duration: 220,
-            easing: 'cubic-bezier(.2,.8,.2,1)',
-            fill: 'forwards'
-          }
-        );
-      }
-
-      const incoming = document.createElement('span');
-      incoming.className = 'count-badge-value is-incoming';
-      incoming.textContent = String(nextCount);
-      badge.appendChild(incoming);
-
-      const inAnimation = incoming.animate(
-        [
-          {
-            opacity: 0,
-            transform: `translateY(${previousCount > 0 ? direction * 55 : 24}%) scale(.92)`,
-            filter: 'blur(2px)'
-          },
-          {
-            opacity: 1,
-            transform: 'translateY(0) scale(1)',
-            filter: 'blur(0px)'
-          }
-        ],
-        {
-          duration: 220,
-          easing: 'cubic-bezier(.2,.8,.2,1)',
-          fill: 'forwards'
-        }
-      );
-
-      inAnimation.finished
-        .catch(() => {})
-        .finally(() => {
-          if (badge._counterVersion !== version) return;
-
-          badge.replaceChildren(incoming);
-          incoming.classList.remove('is-incoming');
-          incoming.getAnimations().forEach((animation) => animation.cancel());
-        });
-    }
-
-    function updateDemoStats() {
-      const sidepanel = document.querySelector('.sidepanel');
-      if (!sidepanel) return;
-
-      const currentHeight = Math.round(sidepanel.getBoundingClientRect().height);
-      panelHeightValue.textContent = `${currentHeight} px`;
-      if (panelHeightControl) panelHeightControl.value = String(currentHeight);
-      visibleCountValue.textContent = `${getVisibleCards().length} / ${MAX_VISIBLE_NOTIFICATIONS}`;
-      updateOverflowCounter();
-
-      const noRoom = getVisibleCards().length >= MAX_VISIBLE_NOTIFICATIONS || getOverflowCards().length > 0;
-
-      [addNotificationButton, ptrButton].forEach((button) => {
-        if (!button) return;
-        button.classList.toggle('is-disabled', noRoom);
-        button.setAttribute('aria-disabled', String(noRoom));
-      });
-    }
-
-    function applyNotificationLimit() {
-      const sidepanel = document.querySelector('.sidepanel');
-      if (!sidepanel || panelViewIsHidden()) return;
-
-      sortNotificationsByPriority();
-
-      const top = sidepanel.querySelector('.sidepanel-top');
-      const cards = Array.from(sidepanel.querySelectorAll('.events .notification-card'));
-      const previousOverflow = new Set(cards.filter((card) => card.classList.contains('is-overflow')));
-
-      cards.forEach((card) => card.classList.remove('is-overflow'));
-
-      const candidates = cards.filter((card) => !card.classList.contains('is-hidden'));
-
-      candidates.slice(MAX_VISIBLE_NOTIFICATIONS).forEach((card) => {
-        card.classList.add('is-overflow');
-      });
-
-      let visible = candidates.filter((card) => !card.classList.contains('is-overflow'));
-
-      while (visible.length > 0 && top.scrollHeight > top.clientHeight + 1) {
-        visible.at(-1).classList.add('is-overflow');
-        visible = visible.slice(0, -1);
-      }
-
-      const newlyVisible = cards.filter(
-        (card) =>
-          previousOverflow.has(card) &&
-          !card.classList.contains('is-overflow') &&
-          !card.classList.contains('is-hidden')
-      );
-
-      newlyVisible.forEach((card) => {
-        animateOverflowEnter(card);
-      });
-
-      updateDemoStats();
-    }
-
-    function panelViewIsHidden() {
-      return document.querySelector('#panel-view')?.hidden;
-    }
-
-    async function hideNotification(card) {
-      if (
-        !card ||
-        card.dataset.protected ||
-        card.classList.contains('is-hidden') ||
-        card.dataset.hiding === 'true'
-      ) return;
-
-      card.dataset.hiding = 'true';
-
-      const stage = card.closest('.sidepanel') || card.closest('.notification-demo');
-      const movingElements = getMotionElements(stage, card);
-      const firstRects = captureRects(movingElements);
-      const rect = card.getBoundingClientRect();
-
-      const ghost = card.cloneNode(true);
-      ghost.classList.add('notification-ghost');
-      ghost.removeAttribute('data-hiding');
-      Object.assign(ghost.style, {
-        left: `${rect.left}px`,
-        top: `${rect.top}px`,
-        width: `${rect.width}px`,
-        height: `${rect.height}px`
-      });
-      document.body.appendChild(ghost);
-
-      card.classList.add('is-hidden');
-      card.dataset.hidden = 'true';
-      card.dataset.hiddenReason = 'forced';
-
-      if (stage.classList.contains('sidepanel')) applyNotificationLimit();
-      playFlip(movingElements, firstRects);
-
-      const exitAnimation = ghost.animate(
-        [
-          { opacity: 1, transform: 'translateY(0) scale(1)' },
-          { opacity: 0, transform: 'translateY(-4px) scale(.86)' }
-        ],
-        {
-          duration: EXPRESSIVE_DURATION,
-          easing: EXPRESSIVE_EASING,
-          fill: 'forwards'
-        }
-      );
-
-      try {
-        await exitAnimation.finished;
-      } catch (_) {}
-
-      ghost.remove();
-      card.dataset.hiding = 'false';
-      applyNotificationLimit();
-    }
-
-    function createIncomingNotification(data) {
-      const card = document.createElement('article');
-      card.className = 'notification-card';
-      card.dataset.notification = '';
-      card.dataset.addedNotification = 'true';
-
-      if (data.protectedType) {
-        card.dataset.protected = data.protectedType;
-      }
-
-      const accessory = data.progress
-        ? `<img class="notification-progress" src="${data.progress}" alt="" aria-hidden="true" />`
-        : `<div class="notification-avatar ${data.avatarClass || ''}" aria-hidden="true">
-             <img src="${data.icon}" alt="" />
-           </div>`;
-
-      const hideControl = data.protectedType
-        ? ''
-        : `<div class="hide-anchor">
-             <button class="hide-control" type="button" aria-label="Скрыть уведомление">
-               <span class="eye" aria-hidden="true"></span>
-               <span class="label">Скрыть</span>
-             </button>
-           </div>`;
-
-      card.innerHTML = `
-        <div class="notification-header">
-          <div class="notification-copy">
-            <p class="notification-caption">${data.caption}</p>
-            <p class="notification-title ${data.wrap ? 'wrap' : ''}">${data.title}</p>
-          </div>
-          ${accessory}
-        </div>
-        ${hideControl}
-      `;
-
-      return card;
-    }
-
-    function nextNotificationData() {
-      const data = incomingNotifications[incomingIndex % incomingNotifications.length];
-      incomingIndex += 1;
-      return data;
-    }
-
-    async function insertIncomingNotification({ control, delay = 360 } = {}) {
-      if (!control || control.classList.contains('is-loading')) return false;
-
-      if (control.classList.contains('is-disabled')) {
-        showLimitToast();
-        return false;
-      }
-
-      const events = document.querySelector('.sidepanel .events');
-      const sidepanel = document.querySelector('.sidepanel');
-      if (!events || !sidepanel) return false;
-
-      const originalLabel = control.textContent.trim();
-      control.classList.add('is-loading');
-      control.textContent = control === ptrButton ? 'Перезагружаем…' : 'Обновляем…';
-
-      if (delay) {
-        await new Promise((resolve) => setTimeout(resolve, delay));
-      }
-
-      const movingElements = getMotionElements(sidepanel);
-      const firstRects = captureRects(movingElements);
-      const data = nextNotificationData();
-      const newCard = createIncomingNotification(data);
-      const firstCard = events.querySelector('.notification-card');
-
-      events.insertBefore(newCard, firstCard);
-      sortNotificationsByPriority();
-      applyNotificationLimit();
-
-      if (newCard.classList.contains('is-overflow')) {
-        newCard.remove();
-        incomingIndex -= 1;
-        applyNotificationLimit();
-
-        control.classList.remove('is-loading');
-        control.textContent = originalLabel;
-        showLimitToast();
-        return false;
-      }
-
-      playFlip(movingElements, firstRects);
-
-      newCard.animate(
-        [
-          { opacity: 0, transform: 'scale(.86)' },
-          { opacity: 1, transform: 'scale(1)' }
-        ],
-        {
-          duration: EXPRESSIVE_DURATION,
-          easing: EXPRESSIVE_EASING,
-          fill: 'both'
-        }
-      );
-
-      control.classList.remove('is-loading');
-      control.textContent = originalLabel;
-      applyNotificationLimit();
-      return true;
-    }
-
-    async function addIncomingNotification() {
-      await insertIncomingNotification({
-        control: addNotificationButton,
-        delay: 360
-      });
-    }
-
-    async function simulatePTR() {
-      if (!ptrButton || ptrButton.classList.contains('is-loading')) return;
-
-      if (ptrButton.classList.contains('is-disabled')) {
-        showLimitToast();
-        return;
-      }
-
-      const sidepanel = document.querySelector('.sidepanel');
-      if (!sidepanel) return;
-
-      sidepanel.classList.add('is-ptr-refreshing');
-
-      await new Promise((resolve) => setTimeout(resolve, 280));
-
-      const inserted = await insertIncomingNotification({
-        control: ptrButton,
-        delay: 0
-      });
-
-      await new Promise((resolve) => setTimeout(resolve, inserted ? 180 : 0));
-      sidepanel.classList.remove('is-ptr-refreshing');
-    }
-
-    function resetPrototype() {
-      document.querySelectorAll('[data-added-notification]').forEach((card) => card.remove());
-
-      document.querySelectorAll('.notification-card').forEach((card) => {
-        card.classList.remove('is-hidden', 'is-overflow');
-        card.dataset.hidden = 'false';
-        card.dataset.hiding = 'false';
-        delete card.dataset.hiddenReason;
-      });
-
-      incomingIndex = 0;
-
-      sortNotificationsByPriority();
-      setPanelHeight(MAX_PANEL_HEIGHT);
-
-      addNotificationButton.classList.remove('is-loading', 'is-disabled');
-      addNotificationButton.textContent = 'Добавить нотификацию';
-      addNotificationButton.setAttribute('aria-disabled', 'false');
-
-      if (ptrButton) {
-        ptrButton.classList.remove('is-loading', 'is-disabled');
-        ptrButton.textContent = 'PTR · Перезагрузить страницу';
-        ptrButton.setAttribute('aria-disabled', 'false');
-      }
-
-      requestAnimationFrame(applyNotificationLimit);
-    }
-
-    function setupResize() {
-      const sidepanel = document.querySelector('.sidepanel');
-      if (!sidepanel || !resizeHandle) return;
-
-      let startY = 0;
-      let startHeight = 0;
-
-      const onPointerMove = (event) => {
-        const delta = event.clientY - startY;
-        const nextHeight = Math.min(
-          MAX_PANEL_HEIGHT,
-          Math.max(MIN_PANEL_HEIGHT, startHeight + delta)
-        );
-
-        setPanelHeight(nextHeight);
-      };
-
-      const endResize = () => {
-        resizeHandle.classList.remove('is-resizing');
-        window.removeEventListener('pointermove', onPointerMove);
-        window.removeEventListener('pointerup', endResize);
-        window.removeEventListener('pointercancel', endResize);
-      };
-
-      resizeHandle.addEventListener('pointerdown', (event) => {
-        startY = event.clientY;
-        startHeight = sidepanel.getBoundingClientRect().height;
-        resizeHandle.classList.add('is-resizing');
-        resizeHandle.setPointerCapture?.(event.pointerId);
-
-        window.addEventListener('pointermove', onPointerMove);
-        window.addEventListener('pointerup', endResize);
-        window.addEventListener('pointercancel', endResize);
-      });
-
-      resizeHandle.addEventListener('keydown', (event) => {
-        if (!['ArrowUp', 'ArrowDown'].includes(event.key)) return;
-        event.preventDefault();
-
-        const direction = event.key === 'ArrowDown' ? 1 : -1;
-        const current = sidepanel.getBoundingClientRect().height;
-        const next = Math.min(MAX_PANEL_HEIGHT, Math.max(MIN_PANEL_HEIGHT, current + direction * 20));
-
-        setPanelHeight(next);
-      });
-    }
-
-    document.addEventListener('click', (event) => {
-      const hideButton = event.target.closest('.hide-control');
-      if (!hideButton) return;
-
-      event.preventDefault();
-      event.stopPropagation();
-      hideNotification(hideButton.closest('.notification-card'));
-    });
-
-    if (panelHeightControl) {
-      panelHeightControl.addEventListener('input', (event) => {
-        setPanelHeight(event.target.value);
-      });
-    }
-
-    addNotificationButton.addEventListener('click', addIncomingNotification);
-    ptrButton.addEventListener('click', simulatePTR);
-    restartButton.addEventListener('click', resetPrototype);
-
-    setupResize();
-
-    requestAnimationFrame(() => {
-      sortNotificationsByPriority();
-      setPanelHeight(MAX_PANEL_HEIGHT);
-      applyNotificationLimit();
-    });
-
-    if ('ResizeObserver' in window) {
-      const sidepanel = document.querySelector('.sidepanel');
-      if (sidepanel) {
-        const resizeObserver = new ResizeObserver(() => {
-          if (!panelViewIsHidden()) applyNotificationLimit();
-        });
-        resizeObserver.observe(sidepanel);
-      }
-    }
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>

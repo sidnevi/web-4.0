@@ -1,0 +1,13 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="AvatarIcon">
+<mask id="mask0_0_3810" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="1" y="2" width="18" height="16">
+<g id="Mask">
+<path id="Mask_2" opacity="0.4" d="M1.66667 5.83333V8.33333C1.66667 6.49239 3.15905 5 5 5L16.6667 5V2.5H5C3.15905 2.5 1.66667 3.99238 1.66667 5.83333Z" fill="black"/>
+<path id="Mask_3" fill-rule="evenodd" clip-rule="evenodd" d="M1.66667 8.33333C1.66667 6.49239 3.15905 5 5 5H18.3333V14.375C18.3333 16.1009 16.9766 17.5 15.303 17.5H1.66667V8.33333ZM14.1667 10C13.4763 10 12.9167 10.5596 12.9167 11.25C12.9167 11.9404 13.4763 12.5 14.1667 12.5H14.5833C15.2737 12.5 15.8333 11.9404 15.8333 11.25C15.8333 10.5596 15.2737 10 14.5833 10H14.1667Z" fill="black"/>
+</g>
+</mask>
+<g mask="url(#mask0_0_3810)">
+<path id="Color" d="M0 0H20V20H0V0Z" fill="#F52222"/>
+</g>
+</g>
+</svg>

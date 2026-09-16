@@ -1,0 +1,19 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="tui-ic-medium / chat">
+<mask id="mask0_0_9329" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="1" y="4" width="21" height="19">
+<g id="Mask">
+<path id="Mask_2" fill-rule="evenodd" clip-rule="evenodd" d="M1.5 4.5H17.5C19.9853 4.5 22 6.51472 22 9V23L19.7556 20.5914C18.8098 19.5764 17.4849 19 16.0976 19H6C3.51472 19 1.5 16.9853 1.5 14.5V4.5ZM6 11C6 9.34318 7.34315 8.00003 9 8.00003H17C17 9.65688 15.6569 11 14 11H6ZM9 13C7.34315 13 6 14.3432 6 16H10C11.6569 16 13 14.6569 13 13H9Z" fill="url(#paint0_linear_0_9329)"/>
+<path id="Mask_3" opacity="0.3" d="M6 16C6 14.3431 7.34315 13 9 13H13C13 14.6569 11.6569 16 10 16H6Z" fill="black"/>
+</g>
+</mask>
+<g mask="url(#mask0_0_9329)">
+<path id="Color" d="M0 0H24V24H0V0Z" fill="black"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_0_9329" x1="11.75" y1="4.5" x2="22.6894" y2="22.5829" gradientUnits="userSpaceOnUse">
+<stop/>
+<stop offset="1" stop-opacity="0.7"/>
+</linearGradient>
+</defs>
+</svg>

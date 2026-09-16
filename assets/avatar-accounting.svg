@@ -1,0 +1,24 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="AvatarIcon">
+<mask id="mask0_0_3946" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="1" y="2" width="18" height="16">
+<g id="Mask">
+<path id="Mask_2" fill-rule="evenodd" clip-rule="evenodd" d="M18.3333 5.41667H1.66667V14.5833C1.66667 16.4243 3.15905 17.9167 5 17.9167H12.9167V12.5H18.3333V5.41667ZM13.7024 8.9002L8.95216 13.6505L5.41667 10.1149L5.71121 9.82038C6.36208 9.16948 7.41738 9.16946 8.06827 9.82035L8.95213 10.7042L11.0432 8.61316C11.6828 7.97354 12.7158 7.96087 13.371 8.58462L13.7024 8.9002Z" fill="url(#paint0_linear_0_3946)"/>
+<path id="Mask_3" fill-rule="evenodd" clip-rule="evenodd" d="M14.9999 2.08333H1.66667V5.41667H18.3333C18.3333 3.57572 16.8409 2.08333 14.9999 2.08333Z" fill="url(#paint1_linear_0_3946)"/>
+<path id="Mask_4" opacity="0.4" d="M18.3333 12.5L12.9167 12.5L12.9167 17.9167L18.3333 12.5Z" fill="black"/>
+</g>
+</mask>
+<g mask="url(#mask0_0_3946)">
+<path id="Color" d="M0 0H20V20H0V0Z" fill="#00B92D"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_0_3946" x1="17.0833" y1="16.0648" x2="3.26529" y2="1.01052" gradientUnits="userSpaceOnUse">
+<stop/>
+<stop offset="1" stop-opacity="0.7"/>
+</linearGradient>
+<linearGradient id="paint1_linear_0_3946" x1="18.3333" y1="2.08334" x2="2.08333" y2="5" gradientUnits="userSpaceOnUse">
+<stop stop-opacity="0.45"/>
+<stop offset="1" stop-opacity="0.3"/>
+</linearGradient>
+</defs>
+</svg>

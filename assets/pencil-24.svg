@@ -1,0 +1,14 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="tui-ic-medium / pencil">
+<mask id="mask0_0_9510" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="3" y="2" width="17" height="18">
+<g id="Mask">
+<path id="Mask_2" d="M3.29289 15.4644C3.10536 15.652 3 15.9063 3 16.1715V20H7.24264L16.435 10.8076L12.1924 6.56494L3.29289 15.4644Z" fill="black"/>
+<path id="Mask_3" opacity="0.4" fill-rule="evenodd" clip-rule="evenodd" d="M17 20C17 18.8954 16.1046 18 15 18H9.24261L7.24264 20L17 20Z" fill="black"/>
+<path id="Mask_4" opacity="0.7" d="M16.4349 2.32275L13.6064 5.15118L17.8491 9.39382L19.2633 7.97961C20.0443 7.19856 20.0443 5.93223 19.2633 5.15118L16.4349 2.32275Z" fill="black"/>
+</g>
+</mask>
+<g mask="url(#mask0_0_9510)">
+<path id="Color" d="M0 0H24V24H0V0Z" fill="black"/>
+</g>
+</g>
+</svg>
